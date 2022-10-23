@@ -16,7 +16,7 @@ const { ObjectId} = require('mongodb');
 
 var db;
 MongoClient.connect(process.env.DB_URL,function(에러, client){
-    //연결되면 할일
+    //DB 연결되면 포트 ON
     if(에러) return console.log(에러)
     db = client.db('todoapp');
     app.listen(process.env.PORT, function(){
@@ -24,42 +24,50 @@ MongoClient.connect(process.env.DB_URL,function(에러, client){
     });
 });
 
-//Method Override 셋팅
+//Method Override 셋팅 > PUT DELETE를 위하여
 app.use('/public', express.static('public'));
 const methodOverride = require('method-override')
 app.use(methodOverride('_method')) 
 
-//Passport 셋팅
+//Passport 셋팅 > 로그인 절차
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
-
-app.use(session({secret : '비밀코드', resave: true, saveUninitialized : false}));
+app.use(session({secret : 'secretCode', resave: true, saveUninitialized : false}));
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 //ajax 셋팅
 app.use(express.json());
 var cors = require('cors');
 app.use(cors());
 
+
+//리액트 셋팅
 app.use(express.static(path.join(__dirname, '../taxtask-app/build')));
 
 app.get('/', function (요청, 응답) {
   응답.sendFile(path.join(__dirname, '../taxtask-app/build/index.html'));
 });
 
+
+app.get('*', function(요청, 응답){
+  응답.sendFile(path.join(__dirname, '../taxtask-app/build/index.html'))
+});
+
 app.get('/product', function (요청, 응답) {
     응답.json({name : 'black shoes'})
 });
 
-app.get('*', function(요청, 응답){
-    응답.sendFile(path.join(__dirname, '../taxtask-app/build/index.html'))
-})
 
 
 //로그인 셋팅
+app.post('/login',passport.authenticate('local',{
+  failureRedirect : console.log('실패함 > alert로 실패 띄워주자')
+}), function(요청, 응답){
+  응답.redirect('/')
+});
+
 passport.use(new LocalStrategy({
     usernameField: 'id',
     passwordField: 'pw',
@@ -79,7 +87,7 @@ passport.use(new LocalStrategy({
     })
  }));
 
-  passport.serializeUser(function (user, done) {
+passport.serializeUser(function (user, done) {
     done(null, user.id)
  });
   
@@ -89,14 +97,6 @@ passport.use(new LocalStrategy({
     })
 }); 
 
-
-//회원가입
-  app.post('/register',function(요청,응답){
-    //비번 암호화,id 알파벳숫자 정규식, id 중복 확인, 
-    db.collection('login').insertOne({id:요청.body.id, pw : 요청.body.pw}, function(에러,결과){
-      응답.redirect('/')
-    })
-  })
 
 //로그인 확인 함수  
 function 로그인했니(요청, 응답, next){
@@ -114,4 +114,13 @@ db.collection('post').find().toArray(function(에러, 결과){
         console.log(결과);
     });
 
+*/
+
+//회원가입
+/*app.post('/register',function(요청,응답){
+    //비번 암호화,id 알파벳숫자 정규식, id 중복 확인, 
+    db.collection('login').insertOne({id:요청.body.id, pw : 요청.body.pw}, function(에러,결과){
+      응답.redirect('/')
+    })
+  })
 */
