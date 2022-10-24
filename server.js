@@ -63,9 +63,8 @@ app.get('/product', function (요청, 응답) {
 
 //로그인 셋팅
 app.post('/login',passport.authenticate('local',{
-  failureRedirect : console.log('실패함 > alert로 실패 띄워주자')
+  failureRedirect : console.log('실패함')
 }), function(요청, 응답){
-  console.log(요청.user)
   응답.send(요청.user)
 });
 
