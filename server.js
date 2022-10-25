@@ -61,7 +61,18 @@ app.get('/product', function (요청, 응답) {
 
 
 
-//로그인 셋팅
+//로그인 셋팅 - bcrypt, passport모듈
+const bcrypt = require('bcrypt');
+const salt = 5
+const password = '1234'
+
+const encryptedPassword = bcrypt.hashSync(password, salt)
+console.log(encryptedPassword)
+
+const same = bcrypt.compareSync(password, encryptedPassword)
+
+console.log(same)
+
 app.post('/login',passport.authenticate('local',{
   failureRedirect : console.log('실패함')
 }), function(요청, 응답){
@@ -79,7 +90,11 @@ passport.use(new LocalStrategy({
       if (에러) return done(에러)
   
       if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
-      if (입력한비번 == 결과.pw) {
+      
+      //암호화 해제
+      const same = bcrypt.compareSync(입력한비번, 결과.pw)
+
+      if (same) {
         return done(null, 결과)
       } else {
         return done(null, false, { message: '비번틀렸어요' })
@@ -106,6 +121,30 @@ function 로그인했니(요청, 응답, next){
         응답.send('로그인안하셨는데요?')
     }
 }
+
+//회원가입 세팅
+app.post('/register', function(요청, 응답){
+   응답.send('전송완료')
+    
+    db.collection('counter').findOne({name : "아이디갯수"}, function(에러, 결과){
+        var 총아이디갯수 = 결과.totalID;
+        console.log(총아이디갯수)
+        
+        //암호화
+        const encryptedPassword = bcrypt.hashSync(요청.body.pw, salt)
+
+        
+        db.collection('login').insertOne({ _id : 총아이디갯수+1, id  : 요청.body.id , pw : encryptedPassword},function(에러,결과){
+
+            console.log(결과)
+            db.collection('counter').updateOne({name:"아이디갯수"},{ $inc : {totalID:1}},function(에러, 결과){
+              if(에러) return console.log(에러)
+          })
+        });
+
+        
+    });
+});
 
 
 /*db 데이터 꺼내기
