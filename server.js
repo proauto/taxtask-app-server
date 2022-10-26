@@ -64,14 +64,6 @@ app.get('/product', function (요청, 응답) {
 //로그인 셋팅 - bcrypt, passport모듈
 const bcrypt = require('bcrypt');
 const salt = 5
-const password = '1234'
-
-const encryptedPassword = bcrypt.hashSync(password, salt)
-console.log(encryptedPassword)
-
-const same = bcrypt.compareSync(password, encryptedPassword)
-
-console.log(same)
 
 app.post('/login',passport.authenticate('local',{
   failureRedirect : console.log('실패함')
