@@ -156,11 +156,24 @@ db.collection('post').find().toArray(function(에러, 결과){
 //거래처관리 페이지
 //폼에 담긴 자료를 가지고 거래처 정보 갱신
 app.put('/accounts/edit:id', function (요청, 응답) {
+  
+  console.log(요청.body._id)
 
-
-  db.collection('accounts').updateOne({ _id: parseInt(요청.body.id) }, { $set: { 제목: 요청.body.title, 날짜: 요청.body.date } }, function (에러, 결과) {
+  db.collection('accounts').updateOne({ _id: parseInt(요청.body._id) }, { $set: {
+    id: 요청.body.id,
+    name: 요청.body.name,
+    case: 요청.body.case,
+    category: 요청.body.category,
+    num_account: 요청.body.num_account,
+    ceo: 요청.body.ceo,
+    num_corporation: 요청.body.num_corporation,
+    phone: 요청.body.phone,
+    type: 요청.body.type,
+    open_day: 요청.body.open_day,
+    manager: 요청.body.manager,
+  } }, function (에러, 결과) {
     console.log('수정완료')
-    응답.redirect('/list')
+    응답.redirect('/accounts')
   });
 
 });
@@ -170,12 +183,44 @@ app.put('/accounts/edit:id', function (요청, 응답) {
 app.get('/accounts_data', function (요청, 응답) {
   console.log(요청.query)
 
-  db.collection('accounts').find({manager : 요청.query.manager}).toArray(function (에러, 결과) {
+  db.collection('accounts').find({ manager: 요청.query.manager }).toArray(function (에러, 결과) {
     console.log(결과);
     응답.json(결과)
-    
+
   });
 
+});
+
+//거래처 추가
+app.post('/accounts_data', function (요청, 응답) {
+  응답.send('전송완료')
+
+  db.collection('counter').findOne({ name: "거래처갯수" }, function (에러, 결과) {
+    var 총거래처갯수 = 결과.totalAccount;
+    console.log(총거래처갯수)
+
+
+    db.collection('accounts').insertOne({
+      _id: 총거래처갯수 + 1,
+      id: 요청.body.id,
+      name: 요청.body.name,
+      case: 요청.body.case,
+      category: 요청.body.category,
+      num_account: 요청.body.num_account,
+      ceo: 요청.body.ceo,
+      num_corporation: 요청.body.num_corporation,
+      phone: 요청.body.phone,
+      type: 요청.body.type,
+      open_day: 요청.body.open_day,
+      manager: 요청.body.manager,
+    }, function (에러, 결과) {
+
+      console.log(결과)
+      db.collection('counter').updateOne({ name: "거래처갯수" }, { $inc: { totalAccount: 1 } }, function (에러, 결과) {
+        if (에러) return console.log(에러)
+      })
+    });
+  });
 });
 
 
