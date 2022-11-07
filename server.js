@@ -271,6 +271,49 @@ app.post('/todo_data', function (요청, 응답) {
 });
 
 
+//노트 관리 페이지
+
+//노트 리스트
+//매니저 정보 받아서 노트 정보 전송
+app.get('/note_data', function (요청, 응답) {
+  console.log(요청.query)
+
+  db.collection('note').find({ manager: 요청.query.manager }).toArray(function (에러, 결과) {
+    console.log(결과);
+    응답.json(결과)
+
+  });
+
+});
+
+
+//노트 정보 추가
+app.post('/note_data', function (요청, 응답) {
+  응답.send('전송완료')
+
+  db.collection('counter').findOne({ name: "노트갯수" }, function (에러, 결과) {
+    var 총노트갯수 = 결과.totalNote;
+    console.log(총노트갯수)
+
+    db.collection('note').insertOne({
+      _id: 총노트갯수 + 1,
+      id: 요청.body.id,
+      name: 요청.body.name,
+      body: 요청.body.body,
+      date: 요청.body.date,
+      color: 요청.body.color,
+      group: 요청.body.group,
+      manager: 요청.body.manager,
+    }, function (에러, 결과) {
+
+      console.log(결과)
+      db.collection('counter').updateOne({ name: "노트갯수" }, { $inc: { totalAccount: 1 } }, function (에러, 결과) {
+        if (에러) return console.log(에러)
+      })
+    });
+  });
+});
+
 
 
 //없는 페이지 내용 구현
